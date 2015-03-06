@@ -129,3 +129,97 @@ eval_identifier_expression(CRB_Interpreter *inter,
    }
 }
 
+
+static CRB_Value eval_expression(CRB_Interpreter *inter, LocalEnvironment *env,
+                                 Expression *expr)
+{
+   CRB_Value v;
+   Variable *left;
+   
+   v = eval_expression(inter, env, expression);
+
+   left = crb_search_local_variable(env, identifier);
+
+   if (left != NULL) {
+      release_if_string(&left->value);
+      left->value = v;
+      refer_if_string(&v);
+   } else {
+   
+      if (env != NULL) {
+         
+            crb_add_local_variable(env, identifier, &v);
+         } else {
+            CRB_add_global_variable(inter, identifier, &v);
+         }
+         refer_if_string(&v);
+   }
+
+   return v;
+}
+
+
+static CRB_Boolean
+eval_binary_boolean(CRB_Interpreter *inter, ExpressionType operator,
+                     CRB_Boolean left, CRB_Boolean right, int line_number)
+{
+
+   CRB_Boolean result;
+   
+   if (operator == EQ_EXPRESSION) {
+      result = left == right;
+   } else if (operator == NE_EXPRESSION) {
+      result = left != right;
+   } else {
+      char *op_str = crb_get_operator_string(operator);
+   
+      crb_runtime_error(line_number, NOT_BOOLEAN_OPEATOR_ERR,
+                     STRING_MESSAGE_ARGUMENT, "operator", op_str,
+                     MESSAGE_ARGUMENT_END);
+   }
+
+   return result;
+}
+
+
+static void
+eval_binary_int(CRB_Interpreter *inter, ExpressionType operator,
+                 int left, int right,
+               CRB_Value *result, int line_number)
+{
+
+   if (dkc_is_match_operator(operator)) {
+      result->type = CRB_INT_VALUE;
+   } else if (dkc_is_compare_operator(operator)) {
+      result->type = CRB_BOOLEAN_VALUE;
+   } else{
+      DBG_panic(("operator..%d\n", operator));
+   }
+
+   switch (operator) {
+      case BOOLEAN_EXPRESSION:
+      case INT_EXPRESSION:
+      case DOUBLE_EXPRESSION:
+      case STRING_EXPRESSION:
+      case IDENTIFIER_EXPRESSION:
+      case ASSIGN_EXPRESSION:
+         DBG_panic(("bad case ...%d", operator));
+         break;
+      case ADD_EXPRESSION:
+         result->u.int_value = left + right;
+         break;
+      case SUB_EXPRESSION:
+         result->u.int_value = left - right;
+         break;
+   
+      case MUL_EXPRESSION:
+         result->u.int_value = left * right;
+         break;
+      case DIV_EXPRESSION:
+         result->u.int_value = left / right;
+         break;
+   
+      case MOD_EXPRESSION:
+         result->u.int_value = left % right;}
+
+}
