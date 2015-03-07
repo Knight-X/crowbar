@@ -220,6 +220,40 @@ eval_binary_int(CRB_Interpreter *inter, ExpressionType operator,
          break;
    
       case MOD_EXPRESSION:
-         result->u.int_value = left % right;}
+         result->u.int_value = left % right;
+         break;
+      case LOGICAL_AND_EXPRESSION: 
+      case LOGICAL_OR_EXPRESSION:
+         DBG_panic(("bad case ..%d", operator));
+         break;
+   
+      case EQ_EXPRESSION:
+         result->u.boolean_value = left == right;
+         break;
+      case NE_EXPRESSION:
+         result->u.boolean_value = left != right;
+         break;
+   
+      case GT_EXPRESSION:
+         result->u.boolean_value = left > right;
+         break;
+      case GE_EXPRESSION:
+         result->u.boolean_value = left >= right;
+         break;
+      case LT_EXPRESSION:
+         result->u.boolean_value = left < right;
+         break;
+      case LE_EXPRESSION:
+         result->u.boolean_value = left <= right;
+         break;
+      case MINUS_EXPRESSION:
+      case FUNCTION_CALL_EXPRESSION:
+      case NULL_EXPRESSION:
+      case EXPRESSION_TYPE_COUNT_PLUS_1:
+      default:
+         DBG_panic(("bad case ...%d", operator));
+   }
 
 }
+
+
